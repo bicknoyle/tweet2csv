@@ -32,15 +32,17 @@ class UnicodeWriter:
         for row in rows:
             self.writerow(row)
 
-parser = argparse.ArgumentParser(description="Query the twitter search API")
+parser = argparse.ArgumentParser(description="Query the twitter search API and output results as csv")
 parser.add_argument('query', metavar='QUERY')
 parser.add_argument('-c', '--columns', nargs='+', default=['id_str', 'from_user', 'created_at', 'text'])
-parser.add_argument('-d', '--delay', type=int)
+parser.add_argument('-d', '--delimiter', default=',')
+parser.add_argument('-l', '--line-terminator', default='\r\n')
+parser.add_argument('-D', '--delay', type=int)
 
 
 options = parser.parse_args()
 
-out_csv = UnicodeWriter(sys.stdout)
+out_csv = UnicodeWriter(sys.stdout, delimiter=options.delimiter, lineterminator=options.line_terminator)
 
 params = {
   'q' : options.query,
