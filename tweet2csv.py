@@ -32,17 +32,18 @@ class UnicodeWriter:
         for row in rows:
             self.writerow(row)
 
-parser = argparse.ArgumentParser(description="Query the twitter search API and output results as csv")
-parser.add_argument('query', metavar='QUERY')
-parser.add_argument('-c', '--columns', nargs='+', default=['id_str', 'from_user', 'created_at', 'text'])
-parser.add_argument('-d', '--delimiter', default=',')
-parser.add_argument('-l', '--line-terminator', default='\r\n')
-parser.add_argument('-D', '--delay', type=int)
+parser = argparse.ArgumentParser(description="Query the Twitter search API and output results as csv")
+parser.add_argument('query', metavar='QUERY', help="Query to send to Twitter search API. See https://dev.twitter.com/docs/using-search for example queries")
+parser.add_argument('-c', '--columns', nargs='+', default=['id_str', 'from_user', 'created_at', 'text'], help="Columns to display")
+parser.add_argument('-D', '--delay', type=int, help="Delay between requests to the Twitter search API. Each request can only return up to 100 results. On queries that return large resultsets, this parameter is usefull to avoid hitting Twitter's rate limit")
 
+csv_group = parser.add_argument_group('CSV options', 'Options for creating the CSV file')
+csv_group.add_argument('-d', '--delimiter', default=',')
+csv_group.add_argument('-l', '--line-terminator', default='\r\n')
 
 options = parser.parse_args()
 
-out_csv = UnicodeWriter(sys.stdout, delimiter=options.delimiter, lineterminator=options.line_terminator)
+out_csv = UnicodeWriter(sys.stdout, delimiter=options.delimiter.decode('string_escape'), lineterminator=options.line_terminator.decode('string_escape'))
 
 params = {
   'q' : options.query,
