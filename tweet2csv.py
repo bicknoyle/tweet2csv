@@ -45,6 +45,8 @@ options = parser.parse_args()
 
 out_csv = UnicodeWriter(sys.stdout, delimiter=options.delimiter.decode('string_escape'), lineterminator=options.line_terminator.decode('string_escape'))
 
+out_csv.writerow(options.columns)
+
 params = {
   'q' : options.query,
   'rpp' : 100, #max allowed by Twitter API
