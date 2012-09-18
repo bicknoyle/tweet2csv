@@ -59,7 +59,7 @@ while True:
     try:
       response = urllib2.urlopen(api_url+qs)
     except urllib2.HTTPError as e:
-      sys.stderr.write('Exception when fetching url: ' + str(e))
+      sys.stderr.write('Exception when fetching url: '+str(e)+"\n")
       sys.exit(1)
 
     data = json.loads(response.read())
