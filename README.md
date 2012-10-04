@@ -1,33 +1,38 @@
 # tweet2csv
 
-#### tweet2csv is a script written in Python to query Twitter's search API and dump the results to a csv.
+#### tweet2csv is a script written in Python to query Twitter's search
+API and output the results as a CSV
+
+## Requirements
+
+tweet2csv requires [Tweepy](http://tweepy.github.com/). The easiest way
+to install Tweepy is:
+
+    $ easy_install tweepy
+
+Altnerative installation methods can be [found here](https://github.com/tweepy/tweepy/blob/master/INSTALL)
 
 ## Example Usage
 
-To get a list tweets mentioning @user:
+Usage typically follows this format:
 
-    $ python tweet2csv.py "@user" > output.csv
+    $ python tweet2csv.py [QUERY]
 
-## Rate Limits
+So get a list tweets mentioning @user:
 
-Twitter's search API only returns up to 100 results per request. The
-script will attempt to make multiple requests in order to get all
-possible results, but Twitter imposes a [rate limit](https://dev.twitter.com/docs/rate-limiting#search)
-on requests. So, if you're seeing failures like:
+    $ python tweet2csv.py "@user"
 
-    $ python tweet2csv.py "@ladygaga"
-    .
-    .
-    .
-    (really long list of results)
-    .
-    .
-    Exception when fetching url: HTTP Error 403: Forbidden
+Or, get a list of tweets mentioning @user and #hashtag:
 
-Use the delay switch (-D, --delay) in order to add some delay between
-requests to the API
+    $ python tweet2csv.py "@user #hashtag"
+
+Or, just get usernames of people saying "exact phrase":
+
+    $ python tweet2csv.py "'exact phrase'" -c from_user
+
+See [Using the Twitter Search API](https://dev.twitter.com/docs/using-search)
+for more examples of queries that can be run against Twitter's Search API
 
 ## Resources
 
-* [Using the Twitter Search API](https://dev.twitter.com/docs/using-search)
 * [GET search](https://dev.twitter.com/docs/api/1/get/search)
