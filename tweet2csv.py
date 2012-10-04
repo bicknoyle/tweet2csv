@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import argparse, csv, codecs, cStringIO, json, sys, time, urllib, urllib2
+import argparse, csv, codecs, cStringIO, sys, tweepy
 
 # From: http://docs.python.org/library/csv.html
 class UnicodeWriter:
@@ -17,7 +17,8 @@ class UnicodeWriter:
         self.encoder = codecs.getincrementalencoder(encoding)()
 
     def writerow(self, row):
-        self.writer.writerow([s.encode("utf-8") for s in row])
+        # Some s in row might not have encode method!!!
+        self.writer.writerow([s.encode("utf-8") if hasattr(s, 'encode') else s for s in row])
         # Fetch UTF-8 output from the queue ...
         data = self.queue.getvalue()
         data = data.decode("utf-8")
@@ -35,7 +36,6 @@ class UnicodeWriter:
 parser = argparse.ArgumentParser(description="Query the Twitter search API and output results as csv")
 parser.add_argument('query', metavar='QUERY', help="Query to send to Twitter search API. See https://dev.twitter.com/docs/using-search for example queries")
 parser.add_argument('-c', '--columns', nargs='+', default=['id_str', 'from_user', 'created_at', 'text'], help="Columns to display")
-parser.add_argument('-D', '--delay', type=int, help="Delay between requests to the Twitter search API. Each request can only return up to 100 results. On queries that return large resultsets, this parameter is usefull to avoid hitting Twitter's rate limit")
 
 csv_group = parser.add_argument_group('CSV options', 'Options for creating the CSV file')
 csv_group.add_argument('-d', '--delimiter', default=',')
@@ -47,33 +47,11 @@ out_csv = UnicodeWriter(sys.stdout, delimiter=options.delimiter.decode('string_e
 
 out_csv.writerow(options.columns)
 
-params = {
-  'q' : options.query,
-  'rpp' : 100, #max allowed by Twitter API
-  'result_type' : 'recent'
-}
-qs = '?' + urllib.urlencode(params)
-api_url = 'https://search.twitter.com/search.json'
-
-while True:
+api = tweepy.API()
+# tweepy.Cursor = pagination
+for tweet in tweepy.Cursor(api.search, q=options.query, rpp=100, result_type='recent').items():
     try:
-      response = urllib2.urlopen(api_url+qs)
-    except urllib2.HTTPError as e:
-      sys.stderr.write('Exception when fetching url: '+str(e)+"\n")
-      sys.exit(1)
-
-    data = json.loads(response.read())
-    if 'results' in data:
-        for tweet in data['results']:
-            try:
-                out_csv.writerow([tweet[column] for column in options.columns])
-            except KeyError as e:
-                print "Column %s doesn't seem to exist!" % (str(e))
-                sys.exit(1)
-
-    if 'next_page' in data:
-        qs = data['next_page']
-        if options.delay:
-            time.sleep(options.delay)
-    else:
-        break
+        out_csv.writerow([getattr(tweet, column) for column in options.columns])
+    except AttributeError as e:
+        sys.stderr.write(str(e))
+        sys.exit(1)
